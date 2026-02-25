@@ -8,8 +8,8 @@ import io.github.jan_tennert.supabase.realtime.Realtime
 import io.github.jan_tennert.supabase.storage.Storage
 
 object SupabaseConfig {
-    const val URL = "YOUR_SUPABASE_URL"
-    const val ANON_KEY = "YOUR_SUPABASE_ANON_KEY"
+    const val URL = "https://jhzqjhfcgtuocqygoxof.supabase.co"
+    const val ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoenFqaGZjZ3R1b2NxeWdveG9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5ODY5NDEsImV4cCI6MjA4NzU2Mjk0MX0.fUhfYUBB6csT6u9wJoNXKwU9mJZVGToFTBf0C2RCHRQ"
 }
 
 object SupabaseInstance {
