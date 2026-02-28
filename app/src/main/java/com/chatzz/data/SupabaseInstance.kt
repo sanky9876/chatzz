@@ -15,6 +15,7 @@ object SupabaseConfig {
 }
 
 object SupabaseInstance {
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     val client: SupabaseClient = createSupabaseClient(
         supabaseUrl = SupabaseConfig.URL,
         supabaseKey = SupabaseConfig.ANON_KEY
@@ -22,6 +23,7 @@ object SupabaseInstance {
         defaultSerializer = KotlinXSerializer(Json {
             ignoreUnknownKeys = true
             isLenient = true
+            explicitNulls = false
         })
         install(Auth)
         install(Postgrest)
