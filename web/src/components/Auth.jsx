@@ -55,9 +55,14 @@ export default function Auth() {
                 }
             } else {
                 if (otp === "123456") {
+                    if (!password || password.length < 6) {
+                        setMessage('Password must be at least 6 characters')
+                        setLoading(false)
+                        return
+                    }
                     const { error: signUpError } = await supabase.auth.signUp({
                         email,
-                        password: "123456demo!",
+                        password: password,
                     })
 
                     if (signUpError) {
@@ -68,7 +73,7 @@ export default function Auth() {
                         setIsLoginView(true)
                         setIsOtpSent(false)
                         setOtp('')
-                        setPassword('123456demo!') // prefill to make it easy to login
+                        // Keep the password they just entered so it's ready for login
                     }
                 } else {
                     setMessage('Invalid Demo OTP! Please enter 123456')
@@ -125,16 +130,30 @@ export default function Auth() {
                             )}
                         </>
                     ) : (
-                        <div className="input-field-wrapper" style={{ position: 'relative' }}>
-                            <input
-                                className="input-field"
-                                type="text"
-                                placeholder="Enter 6-digit OTP (123456)"
-                                value={otp}
-                                required
-                                onChange={(e) => setOtp(e.target.value)}
-                            />
-                        </div>
+                        <>
+                            <div className="input-field-wrapper" style={{ position: 'relative', marginBottom: '1rem' }}>
+                                <input
+                                    className="input-field"
+                                    type="text"
+                                    placeholder="Enter 6-digit OTP (123456)"
+                                    value={otp}
+                                    required
+                                    onChange={(e) => setOtp(e.target.value)}
+                                />
+                            </div>
+                            {!isLoginView && (
+                                <div className="input-field-wrapper" style={{ position: 'relative' }}>
+                                    <input
+                                        className="input-field"
+                                        type="password"
+                                        placeholder="Create password"
+                                        value={password}
+                                        required
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
 
                     <button className="btn-primary" disabled={loading}>

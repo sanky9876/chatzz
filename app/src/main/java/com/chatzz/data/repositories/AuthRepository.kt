@@ -22,11 +22,12 @@ class AuthRepository {
         }
     }
 
-    suspend fun verifySignUpOtp(email: String, token: String) = withContext(Dispatchers.IO) {
+    suspend fun verifySignUpOtp(email: String, token: String, customPassword: String) = withContext(Dispatchers.IO) {
         if (token == "123456") {
+            if (customPassword.length < 6) throw Exception("Password must be at least 6 characters")
             auth.signUpWith(Email) {
                 this.email = email
-                this.password = "123456demo!"
+                this.password = customPassword
             }
         } else {
             throw Exception("Invalid Demo OTP! Please enter 123456")

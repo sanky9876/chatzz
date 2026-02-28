@@ -16,6 +16,7 @@ fun LoginScreen(viewModel: AuthViewModel) {
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     var otp by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     
     LaunchedEffect(isOtpSent, isSignUp) {
         if (isOtpSent) {
@@ -65,9 +66,18 @@ fun LoginScreen(viewModel: AuthViewModel) {
                 label = { Text(if (isSignUp) "Enter OTP (123456)" else "Enter Password") },
                 modifier = Modifier.fillMaxWidth()
             )
+            if (isSignUp) {
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Create Password") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { viewModel.verifyOtp(otp) },
+                onClick = { viewModel.verifyOtp(otp, password) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             ) {

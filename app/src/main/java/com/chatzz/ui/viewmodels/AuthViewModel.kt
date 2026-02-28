@@ -47,12 +47,12 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
         }
     }
 
-    fun verifyOtp(token: String) {
+    fun verifyOtp(token: String, signUpPassword: String = "") {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 if (_isSignUp.value) {
-                    repository.verifySignUpOtp(_email.value, token)
+                    repository.verifySignUpOtp(_email.value, token, signUpPassword)
                 } else {
                     repository.verifyLoginOtp(_email.value, token)
                 }
