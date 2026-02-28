@@ -33,9 +33,12 @@ class MainActivity : ComponentActivity() {
                 when (val screen = currentScreen) {
                     is Screen.Login -> LoginScreen(authViewModel)
                     is Screen.ChatList -> {
-                        // In a real app, you'd fetch chats here. 
-                        // For MVP, using a dummy list or empty list.
-                        ChatListScreen(chats = emptyList()) { chatId ->
+                        val chatListViewModel = com.chatzz.ui.viewmodels.ChatListViewModel(
+                            userId = authRepository.getCurrentUserId() ?: ""
+                        )
+                        val chats by chatListViewModel.chats.collectAsState()
+                        
+                        ChatListScreen(chats = chats) { chatId ->
                             currentScreen = Screen.ChatDetail(chatId)
                         }
                     }
@@ -44,7 +47,11 @@ class MainActivity : ComponentActivity() {
                             chatId = screen.chatId,
                             currentUserId = authRepository.getCurrentUserId() ?: ""
                         )
-                        ChatDetailScreen(chatViewModel, authRepository.getCurrentUserId() ?: "")
+                        ChatDetailScreen(
+                            viewModel = chatViewModel,
+                            currentUserId = authRepository.getCurrentUserId() ?: "",
+                            onNavigateBack = { currentScreen = Screen.ChatList }
+                        )
                     }
                 }
             }

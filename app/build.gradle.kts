@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlinx-serialization") version "1.9.22"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
     id("com.google.gms.google-services")
 }
 
@@ -62,10 +62,10 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     
     // Supabase
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.1.0")
-    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.1.0") // Auth
-    implementation("io.github.jan-tennert.supabase:realtime-kt:2.1.0")
-    implementation("io.github.jan-tennert.supabase:storage-kt:2.1.0")
+    implementation("io.github.jan.supabase:postgrest-kt:2.1.0")
+    implementation("io.github.jan.supabase:gotrue-kt:2.1.0") // Auth
+    implementation("io.github.jan.supabase:realtime-kt:2.1.0")
+    implementation("io.github.jan.supabase:storage-kt:2.1.0")
     
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
@@ -85,6 +85,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.10.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

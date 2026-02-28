@@ -12,6 +12,7 @@ import io.github.jan_tennert.supabase.realtime.channel
 import io.github.jan_tennert.supabase.realtime.postgresChangeFlow
 import io.github.jan_tennert.supabase.realtime.realtime
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.decodeFromJsonElement
 
@@ -43,6 +44,7 @@ class ChatRepository {
             schema = "public",
             table = "messages"
         ).map { it.record.let { json -> client.postgrest.config.json.decodeFromJsonElement<Message>(json) } }
+        .filter { it.chat_id == chatId }
     }
 
     suspend fun deleteChat(chatId: String) {

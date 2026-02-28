@@ -1,8 +1,8 @@
 package com.chatzz.data.repositories
 
 import com.chatzz.data.SupabaseInstance
-import io.github.jan_tennert.supabase.gotrue.auth
-import io.github.jan_tennert.supabase.gotrue.otp.OtpType
+import io.github.jan.supabase.gotrue.auth
+import io.github.jan.supabase.gotrue.OtpType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

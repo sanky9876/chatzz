@@ -19,7 +19,7 @@ import com.chatzz.ui.viewmodels.ChatViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatDetailScreen(viewModel: ChatViewModel, currentUserId: String) {
+fun ChatDetailScreen(viewModel: ChatViewModel, currentUserId: String, onNavigateBack: () -> Unit) {
     val messages by viewModel.messages.collectAsState()
     var textState by remember { mutableStateOf("") }
 
@@ -32,7 +32,10 @@ fun ChatDetailScreen(viewModel: ChatViewModel, currentUserId: String) {
                     titleContentColor = Color.White
                 ),
                 actions = {
-                    IconButton(onClick = { viewModel.deleteChat() }) {
+                    IconButton(onClick = { 
+                        viewModel.deleteChat()
+                        onNavigateBack()
+                    }) {
                         Text("Delete", color = Color.White)
                     }
                 }

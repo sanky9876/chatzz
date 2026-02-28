@@ -1,0 +1,13 @@
+# Android/Gradle
+.gradle
+/build/
+/app/build/
+local.properties
+# IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+# Misc
+*.hprof
+web/.env

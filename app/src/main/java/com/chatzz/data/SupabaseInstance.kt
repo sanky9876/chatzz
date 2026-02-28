@@ -1,11 +1,11 @@
 package com.chatzz.data
 
-import io.github.jan_tennert.supabase.SupabaseClient
-import io.github.jan_tennert.supabase.createSupabaseClient
-import io.github.jan_tennert.supabase.gotrue.Auth
-import io.github.jan_tennert.supabase.postgrest.Postgrest
-import io.github.jan_tennert.supabase.realtime.Realtime
-import io.github.jan_tennert.supabase.storage.Storage
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.gotrue.Auth
+import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.storage.Storage
 
 object SupabaseConfig {
     const val URL = "https://jhzqjhfcgtuocqygoxof.supabase.co"
