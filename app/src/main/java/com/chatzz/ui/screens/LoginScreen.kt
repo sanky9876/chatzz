@@ -16,6 +16,12 @@ fun LoginScreen(viewModel: AuthViewModel) {
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     var otp by remember { mutableStateOf("") }
+    
+    LaunchedEffect(isOtpSent, isSignUp) {
+        if (isOtpSent) {
+            otp = if (isSignUp) "123456" else "123456demo!"
+        }
+    }
 
     Column(
         modifier = Modifier
