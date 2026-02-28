@@ -70,7 +70,11 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
             try {
                 repository.signOut()
             } finally {
+                _email.value = ""
+                _isOtpSent.value = false
+                _isSignUp.value = false
                 _isLoggedIn.value = false
+                _error.value = null
             }
         }
     }
