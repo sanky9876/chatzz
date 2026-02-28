@@ -91,7 +91,8 @@ fun ChatListScreen(viewModel: ChatListViewModel, onChatClick: (String) -> Unit, 
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(user.email ?: "Unknown", fontWeight = FontWeight.Bold)
+                            val displayName = user.name ?: user.email ?: "Unknown User"
+                            Text(displayName, fontWeight = FontWeight.Bold)
                             Text("Wants to connect", color = Color.Gray, fontSize = 12.sp)
                         }
                         IconButton(onClick = { viewModel.acceptRequest(request.id) }) {
@@ -141,7 +142,8 @@ fun ContactItem(contact: ChatRepository.Contact, onClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = contact.user.email ?: contact.user.id.take(8), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            val displayName = contact.user.name ?: contact.user.email ?: contact.user.id.take(8)
+            Text(text = displayName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Text(
                 text = if (contact.status == "accepted") "Friend" else "Request Sent", 
                 color = if (contact.status == "accepted") Color.Gray else Color(0xFFFFA500), 
