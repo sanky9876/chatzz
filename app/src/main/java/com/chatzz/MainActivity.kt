@@ -27,6 +27,8 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(isLoggedIn) {
                     if (isLoggedIn) {
                         currentScreen = Screen.ChatList
+                    } else {
+                        currentScreen = Screen.Login
                     }
                 }
 
@@ -36,11 +38,16 @@ class MainActivity : ComponentActivity() {
                         val chatListViewModel = com.chatzz.ui.viewmodels.ChatListViewModel(
                             userId = authRepository.getCurrentUserId() ?: ""
                         )
-                        val chats by chatListViewModel.chats.collectAsState()
                         
-                        ChatListScreen(chats = chats) { chatId ->
-                            currentScreen = Screen.ChatDetail(chatId)
-                        }
+                        ChatListScreen(
+                            viewModel = chatListViewModel,
+                            onChatClick = { chatId ->
+                                currentScreen = Screen.ChatDetail(chatId)
+                            },
+                            onSignOut = {
+                                authViewModel.signOut()
+                            }
+                        )
                     }
                     is Screen.ChatDetail -> {
                         val chatViewModel = ChatViewModel(

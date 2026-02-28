@@ -64,4 +64,14 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
             }
         }
     }
+
+    fun signOut() {
+        viewModelScope.launch {
+            try {
+                repository.signOut()
+            } finally {
+                _isLoggedIn.value = false
+            }
+        }
+    }
 }

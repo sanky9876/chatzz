@@ -72,7 +72,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     
     // Ktor (Used by Supabase)
-    implementation("io.ktor:ktor-client-android:2.3.7")
+    implementation("io.ktor:ktor-client-okhttp:2.3.7")
     
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.5.0")

@@ -6,6 +6,8 @@ import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
+import io.github.jan.supabase.serializer.KotlinXSerializer
+import kotlinx.serialization.json.Json
 
 object SupabaseConfig {
     const val URL = "https://jhzqjhfcgtuocqygoxof.supabase.co"
@@ -17,6 +19,10 @@ object SupabaseInstance {
         supabaseUrl = SupabaseConfig.URL,
         supabaseKey = SupabaseConfig.ANON_KEY
     ) {
+        defaultSerializer = KotlinXSerializer(Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        })
         install(Auth)
         install(Postgrest)
         install(Realtime)

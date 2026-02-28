@@ -34,4 +34,8 @@ class AuthRepository {
     }
 
     fun getCurrentUserId(): String? = auth.currentUserOrNull()?.id
+
+    suspend fun signOut() = withContext(Dispatchers.IO) {
+        auth.signOut()
+    }
 }
