@@ -3,14 +3,12 @@ package com.chatzz.data.repositories
 import com.chatzz.data.SupabaseInstance
 import com.chatzz.domain.models.Chat
 import com.chatzz.domain.models.Message
-import io.github.jan_tennert.supabase.postgrest.postgrest
-import io.github.jan_tennert.supabase.postgrest.query.Order
-import io.github.jan_tennert.supabase.realtime.Realtime
-import io.github.jan_tennert.supabase.realtime.PostgresAction
-import io.github.jan_tennert.supabase.realtime.PostgresJoinConfig
-import io.github.jan_tennert.supabase.realtime.channel
-import io.github.jan_tennert.supabase.realtime.postgresChangeFlow
-import io.github.jan_tennert.supabase.realtime.realtime
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -40,10 +38,11 @@ class ChatRepository {
 
     fun observeMessages(chatId: String): Flow<Message> {
         val channel = client.realtime.channel("public:messages")
-        return channel.postgresChangeFlow<PostgresAction.Insert>(
-            schema = "public",
+        return channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
             table = "messages"
-        ).map { it.record.let { json -> client.postgrest.config.json.decodeFromJsonElement<Message>(json) } }
+        }.map { 
+            kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromJsonElement<Message>(it.record) 
+        }
         .filter { it.chat_id == chatId }
     }
 

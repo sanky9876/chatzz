@@ -11,8 +11,10 @@ import com.chatzz.ui.viewmodels.AuthViewModel
 @Composable
 fun LoginScreen(viewModel: AuthViewModel) {
     val email by viewModel.email.collectAsState()
+    val isSignUp by viewModel.isSignUp.collectAsState()
     val isOtpSent by viewModel.isOtpSent.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
     var otp by remember { mutableStateOf("") }
 
     Column(
@@ -22,8 +24,13 @@ fun LoginScreen(viewModel: AuthViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Chatzz", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
+        Text(text = if (isSignUp) "Create Account" else "Welcome Back", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(32.dp))
+
+        error?.let {
+            Text(text = it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         if (!isOtpSent) {
             OutlinedTextField(
@@ -38,14 +45,18 @@ fun LoginScreen(viewModel: AuthViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             ) {
-                if (isLoading) CircularProgressIndicator(size = 24.dp)
-                else Text("Send OTP")
+                if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                else Text(if (isSignUp) "Send OTP" else "Continue to Login")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = { viewModel.toggleSignUpMode() }) {
+                Text(if (isSignUp) "Already have an account? Login" else "Don't have an account? Sign Up")
             }
         } else {
             OutlinedTextField(
                 value = otp,
                 onValueChange = { otp = it },
-                label = { Text("Enter OTP") },
+                label = { Text(if (isSignUp) "Enter OTP (123456)" else "Enter Password") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -54,8 +65,8 @@ fun LoginScreen(viewModel: AuthViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
             ) {
-                if (isLoading) CircularProgressIndicator(size = 24.dp)
-                else Text("Verify OTP")
+                if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                else Text(if (isSignUp) "Verify OTP & Sign Up" else "Login")
             }
         }
     }

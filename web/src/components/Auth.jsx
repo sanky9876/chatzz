@@ -5,10 +5,12 @@ import { Mail, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react'
 export default function Auth() {
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState('')
+    const [otp, setOtp] = useState('')
     const [message, setMessage] = useState('')
     const [isSuccess, setIsSuccess] = useState(false)
-    const [password, setPassword] = useState('')
+    const [isOtpSent, setIsOtpSent] = useState(false)
     const [isLoginView, setIsLoginView] = useState(true)
+    const [password, setPassword] = useState('')
 
     const handleAuth = async (event) => {
         event.preventDefault()
@@ -16,31 +18,64 @@ export default function Auth() {
         setMessage('')
         setIsSuccess(false)
 
-        if (isLoginView) {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password
-            })
-            if (error) {
-                setMessage(error.message)
-            } else {
-                setMessage('Logged in successfully!')
-                setIsSuccess(true)
-                await supabase.auth.refreshSession()
+        const handleSendOtp = (e) => {
+            e.preventDefault();
+            setMessage('');
+            if (!email) {
+                setMessage('Please enter your email address');
+                return;
             }
-        } else {
-            const { error: signUpError } = await supabase.auth.signUp({
-                email,
-                password,
-            })
+            setLoading(true);
+            // Simulate sending OTP
+            setTimeout(() => {
+                setIsOtpSent(true);
+                setLoading(false);
+                setMessage('OTP sent to your email (Demo: Use 123456)');
+            }, 500);
+        }
 
-            if (signUpError) {
-                setMessage(signUpError.message)
+        const handleVerifyOtp = async (event) => {
+            event.preventDefault()
+            setLoading(true)
+            setMessage('')
+            setIsSuccess(false)
+
+            if (isLoginView) {
+                // Real password login
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password: password
+                })
+
+                if (signInError) {
+                    setMessage(signInError.message)
+                } else {
+                    setMessage('Logged in successfully!')
+                    setIsSuccess(true)
+                }
             } else {
-                setMessage('Account created successfully! You can now log in.')
-                setIsSuccess(true)
-                setIsLoginView(true) // Switch back to login view after successful signup
+                if (otp === "123456") {
+                    const { error: signUpError } = await supabase.auth.signUp({
+                        email,
+                        password: "123456demo!",
+                    })
+
+                    if (signUpError) {
+                        setMessage(signUpError.message)
+                    } else {
+                        setMessage('Account verified successfully! You can now log in.')
+                        setIsSuccess(true)
+                        setIsLoginView(true)
+                        setIsOtpSent(false)
+                        setOtp('')
+                        setPassword('123456demo!') // prefill to make it easy to login
+                    }
+                } else {
+                    setMessage('Invalid Demo OTP! Please enter 123456')
+                }
             }
+
+            setLoading(false)
         }
 
         setLoading(false)
@@ -59,38 +94,55 @@ export default function Auth() {
                     {isLoginView ? 'Welcome Back' : 'Create Account'}
                 </h1>
                 <p className="auth-subtitle">
-                    {isLoginView ? 'Sign in to connect with your friends' : 'Sign up to get started'}
+                    {isLoginView ? 'Enter your email and password' : 'Enter your email to connect with friends'}
                 </p>
 
-                <form className="auth-form" onSubmit={handleAuth}>
-                    <div className="input-field-wrapper" style={{ position: 'relative' }}>
-                        <Mail className="search-icon" size={20} style={{ top: '50%', transform: 'translateY(-50%)' }} />
-                        <input
-                            className="input-field search-input"
-                            type="email"
-                            placeholder="Your email address"
-                            value={email}
-                            required
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
-                    <div className="input-field-wrapper" style={{ position: 'relative' }}>
-                        <input
-                            className="input-field"
-                            type="password"
-                            placeholder="Enter password"
-                            value={password}
-                            required
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                    </div>
+                <form className="auth-form" onSubmit={isOtpSent ? handleVerifyOtp : handleSendOtp}>
+                    {!isOtpSent || isLoginView ? (
+                        <>
+                            <div className="input-field-wrapper" style={{ position: 'relative', marginBottom: '1rem' }}>
+                                <Mail className="search-icon" size={20} style={{ top: '50%', transform: 'translateY(-50%)' }} />
+                                <input
+                                    className="input-field search-input"
+                                    type="email"
+                                    placeholder="Your email address"
+                                    value={email}
+                                    required
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+                            {isLoginView && (
+                                <div className="input-field-wrapper" style={{ position: 'relative' }}>
+                                    <input
+                                        className="input-field"
+                                        type="password"
+                                        placeholder="Enter password"
+                                        value={password}
+                                        required
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="input-field-wrapper" style={{ position: 'relative' }}>
+                            <input
+                                className="input-field"
+                                type="text"
+                                placeholder="Enter 6-digit OTP (123456)"
+                                value={otp}
+                                required
+                                onChange={(e) => setOtp(e.target.value)}
+                            />
+                        </div>
+                    )}
 
                     <button className="btn-primary" disabled={loading}>
                         {loading ? (
                             <Loader2 className="animate-spin" size={20} style={{ animation: 'spin 1s linear infinite' }} />
                         ) : (
                             <>
-                                {isLoginView ? 'Login' : 'Sign Up'}
+                                {isLoginView ? 'Login' : (isOtpSent ? 'Verify OTP' : 'Send OTP')}
                                 <ArrowRight size={20} />
                             </>
                         )}
@@ -99,16 +151,22 @@ export default function Auth() {
 
                 <div style={{ marginTop: '1.5rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
                     {isLoginView ? (
-                        <p>Don't have an account? <button type="button" onClick={() => { setIsLoginView(false); setMessage(''); }} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: '600', fontSize: '0.95rem' }}>Sign Up</button></p>
+                        <p>Don't have an account? <button type="button" onClick={() => { setIsLoginView(false); setMessage(''); setOtp(''); setIsOtpSent(false); }} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: '600', fontSize: '0.95rem' }}>Sign Up</button></p>
                     ) : (
-                        <p>Already have an account? <button type="button" onClick={() => { setIsLoginView(true); setMessage(''); }} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: '600', fontSize: '0.95rem' }}>Login</button></p>
+                        <>
+                            {isOtpSent ? (
+                                <p><button type="button" onClick={() => { setIsOtpSent(false); setMessage(''); setOtp(''); }} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: '600', fontSize: '0.95rem' }}>Change Email</button></p>
+                            ) : (
+                                <p>Already have an account? <button type="button" onClick={() => { setIsLoginView(true); setMessage(''); setOtp(''); setIsOtpSent(false); }} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: '600', fontSize: '0.95rem' }}>Login</button></p>
+                            )}
+                        </>
                     )}
                 </div>
 
                 {message && (
-                    <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: isSuccess ? '#4ade80' : '#f87171', fontSize: '0.9rem' }}>
+                    <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: isSuccess ? '#4ade80' : 'var(--text-muted)', fontSize: '0.9rem' }}>
                         {isSuccess && <CheckCircle2 size={16} />}
-                        <span>{message}</span>
+                        <span style={!isSuccess && message.includes('Invalid') ? { color: '#f87171' } : {}}>{message}</span>
                     </div>
                 )}
             </div>
