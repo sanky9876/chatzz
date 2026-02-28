@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -121,7 +120,10 @@ fun MessageBubble(message: Message, isCurrentUser: Boolean) {
                     if (isCurrentUser) {
                         Spacer(modifier = Modifier.width(4.dp))
                         if (message.read_at != null) {
-                            Icon(Icons.Default.DoneAll, contentDescription = "Read", tint = Color(0xFF34B7F1), modifier = Modifier.size(16.dp))
+                            Row {
+                                Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF34B7F1), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Check, contentDescription = "Read", tint = Color(0xFF34B7F1), modifier = Modifier.size(16.dp).offset(x = (-8).dp))
+                            }
                         } else {
                             Icon(Icons.Default.Check, contentDescription = "Sent", tint = Color.Gray, modifier = Modifier.size(16.dp))
                         }
