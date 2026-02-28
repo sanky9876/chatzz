@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -105,7 +107,26 @@ fun MessageBubble(message: Message, isCurrentUser: Boolean) {
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(text = message.content, fontSize = 16.sp)
-                // Timestamps can be added here
+                
+                val timeString = try {
+                    message.created_at?.let { iso ->
+                        val instant = java.time.Instant.parse(iso)
+                        val formatter = java.time.format.DateTimeFormatter.ofPattern("hh:mm a").withZone(java.time.ZoneId.systemDefault())
+                        formatter.format(instant)
+                    } ?: ""
+                } catch (e: Exception) { "" }
+
+                Row(modifier = Modifier.align(Alignment.End), verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = timeString, fontSize = 10.sp, color = Color.Gray)
+                    if (isCurrentUser) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        if (message.read_at != null) {
+                            Icon(Icons.Default.DoneAll, contentDescription = "Read", tint = Color(0xFF34B7F1), modifier = Modifier.size(16.dp))
+                        } else {
+                            Icon(Icons.Default.Check, contentDescription = "Sent", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
             }
         }
     }

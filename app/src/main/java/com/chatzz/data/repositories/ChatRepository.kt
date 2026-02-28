@@ -14,7 +14,7 @@ import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.json.decodeFromJsonElement
 
@@ -42,14 +42,32 @@ class ChatRepository {
 
     fun observeMessages(chatId: String): Flow<Message> {
         val channel = client.realtime.channel("public:messages")
-        return channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
+        return channel.postgresChangeFlow<PostgresAction>(schema = "public") {
             table = "messages"
-        }.map { 
-            kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromJsonElement<Message>(it.record) 
+        }.mapNotNull { action -> 
+            when (action) {
+                is PostgresAction.Insert -> kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromJsonElement<Message>(action.record)
+                is PostgresAction.Update -> kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromJsonElement<Message>(action.record)
+                else -> null
+            }
         }
         .filter { it.chat_id == chatId }
         .onStart {
             channel.subscribe()
+        }
+    }
+
+    suspend fun markMessagesAsRead(chatId: String, currentUserId: String) {
+        val unreadMessages = getMessages(chatId).filter { it.sender_id != currentUserId && it.read_at == null }
+        if (unreadMessages.isEmpty()) return
+
+        val unreadIds = unreadMessages.mapNotNull { it.id }
+        
+        @kotlinx.serialization.Serializable
+        data class ReadUpdate(val read_at: String)
+
+        client.postgrest["messages"].update(ReadUpdate(read_at = java.time.Instant.now().toString())) {
+            filter { isIn("id", unreadIds) }
         }
     }
 
@@ -203,5 +221,18 @@ class ChatRepository {
         )
 
         return newChatId
+    }
+
+    suspend fun updateLastSeen(userId: String) {
+        @kotlinx.serialization.Serializable
+        data class LastSeenUpdate(val last_seen: String)
+
+        try {
+            client.postgrest["users"].update(LastSeenUpdate(java.time.Instant.now().toString())) {
+                filter { eq("id", userId) }
+            }
+        } catch(e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

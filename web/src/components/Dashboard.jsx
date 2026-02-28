@@ -30,7 +30,29 @@ export default function Dashboard({ session }) {
             })
             .subscribe()
 
-        return () => supabase.removeChannel(subscription)
+        // Online Status Heartbeat
+        const updateOnlineStatus = async () => {
+            if (currentUser) {
+                await supabase.from('users').update({ last_seen: new Date().toISOString() }).eq('id', currentUser.id)
+            }
+        }
+        updateOnlineStatus()
+        const heartbeatInterval = setInterval(updateOnlineStatus, 60000)
+
+        // Listen for other users coming online
+        const userSubscription = supabase
+            .channel('public:users')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
+                setContacts(prev => prev.map(c => c.id === payload.new.id ? { ...c, last_seen: payload.new.last_seen } : c))
+                setActiveChatUser(prev => prev?.id === payload.new.id ? { ...prev, last_seen: payload.new.last_seen } : prev)
+            })
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(subscription)
+            supabase.removeChannel(userSubscription)
+            clearInterval(heartbeatInterval)
+        }
     }, [])
 
     const fetchContactsAndRequests = async () => {

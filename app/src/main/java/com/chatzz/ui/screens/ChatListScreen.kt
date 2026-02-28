@@ -139,7 +139,25 @@ fun ContactItem(contact: ChatRepository.Contact, onClick: () -> Unit) {
                 .size(40.dp)
                 .clip(CircleShape)
                 .background(Color.LightGray)
-        )
+        ) {
+            val isOnline = try {
+                contact.user.last_seen?.let { iso ->
+                    val instant = java.time.Instant.parse(iso)
+                    val diff = java.time.Duration.between(instant, java.time.Instant.now()).toMinutes()
+                    diff < 5
+                } ?: false
+            } catch (e: Exception) { false }
+            
+            if (isOnline) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF10b981))
+                        .align(Alignment.BottomEnd)
+                )
+            }
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             val displayName = contact.user.name ?: contact.user.email ?: contact.user.id.take(8)

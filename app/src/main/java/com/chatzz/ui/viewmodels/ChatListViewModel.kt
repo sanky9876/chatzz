@@ -32,6 +32,21 @@ class ChatListViewModel(
 
     init {
         loadData()
+        startHeartbeat()
+    }
+
+    private fun startHeartbeat() {
+        viewModelScope.launch {
+            try { repository.updateLastSeen(userId) } catch(e: Exception) {}
+            while(true) {
+                kotlinx.coroutines.delay(60000)
+                try {
+                    repository.updateLastSeen(userId)
+                    _contacts.value = repository.getContacts(userId)
+                    _pendingRequests.value = repository.getPendingRequests(userId)
+                } catch(e: Exception) {}
+            }
+        }
     }
 
     fun loadData() {

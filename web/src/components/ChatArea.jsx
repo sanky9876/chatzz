@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
-import { Send, MoreVertical, Paperclip, Smile, Image as ImageIcon, Search, MessageSquare, UserPlus } from 'lucide-react'
+import { Send, MoreVertical, Paperclip, Smile, Image as ImageIcon, Search, MessageSquare, UserPlus, Check, CheckCheck } from 'lucide-react'
+import EmojiPicker from 'emoji-picker-react'
 import { supabase } from '../supabaseClient'
 
 export default function ChatArea({ chatId, chatUser, currentUser }) {
     const [messages, setMessages] = useState([])
     const [newMessage, setNewMessage] = useState('')
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const messagesEndRef = useRef(null)
 
     useEffect(() => {
@@ -15,6 +16,12 @@ export default function ChatArea({ chatId, chatUser, currentUser }) {
                 // Listen formatting is specific for supabase v2
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` }, payload => {
                     setMessages(current => [...current, payload.new])
+                    if (payload.new.sender_id !== currentUser.id) {
+                        markMessagesAsRead([payload.new])
+                    }
+                })
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` }, payload => {
+                    setMessages(current => current.map(msg => msg.id === payload.new.id ? payload.new : msg))
                 })
                 .subscribe()
 
@@ -32,6 +39,20 @@ export default function ChatArea({ chatId, chatUser, currentUser }) {
 
 
 
+    const markMessagesAsRead = async (msgs) => {
+        if (!currentUser) return;
+        const unreadMsgIds = msgs
+            .filter(m => m.sender_id !== currentUser.id && !m.read_at)
+            .map(m => m.id)
+
+        if (unreadMsgIds.length > 0) {
+            await supabase
+                .from('messages')
+                .update({ read_at: new Date().toISOString() })
+                .in('id', unreadMsgIds)
+        }
+    }
+
     const fetchMessages = async () => {
         try {
             // Make sure you have a messages table with chat_id column in Supabase
@@ -48,6 +69,7 @@ export default function ChatArea({ chatId, chatUser, currentUser }) {
 
             if (data) {
                 setMessages(data)
+                markMessagesAsRead(data)
             } else {
                 setMessages([])
             }
@@ -134,7 +156,14 @@ export default function ChatArea({ chatId, chatUser, currentUser }) {
                 </div>
                 <div className="chat-header-info">
                     <div className="chat-header-name">{chatUser?.username || chatUser?.email || 'Unknown User'}</div>
-                    <div className="chat-header-status">{isPending ? 'Pending Request' : 'Online'}</div>
+                    <div className="chat-header-status">
+                        {isPending ? 'Pending Request' : (
+                            chatUser?.last_seen && (new Date() - new Date(chatUser.last_seen)) < 5 * 60 * 1000 ?
+                                <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <div style={{ width: 8, height: 8, background: '#10b981', borderRadius: '50%' }}></div> Online
+                                </span> : 'Offline'
+                        )}
+                    </div>
                 </div>
                 {!isPending && (
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -162,8 +191,13 @@ export default function ChatArea({ chatId, chatUser, currentUser }) {
                                     <div className="message-bubble">
                                         {msg.text}
                                     </div>
-                                    <div className="message-time">
-                                        {formatTime(msg.created_at)}
+                                    <div className="message-time" style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                                        <span>{formatTime(msg.created_at)}</span>
+                                        {isSent && (
+                                            msg.read_at ?
+                                                <CheckCheck size={14} color="#3b82f6" /> :
+                                                <Check size={14} color="gray" />
+                                        )}
                                     </div>
                                 </div>
                             )
@@ -171,8 +205,15 @@ export default function ChatArea({ chatId, chatUser, currentUser }) {
                         <div ref={messagesEndRef} />
                     </div>
 
+                    <div style={{ position: 'relative' }}>
+                        {showEmojiPicker && (
+                            <div style={{ position: 'absolute', bottom: '10px', left: '10px', zIndex: 1000 }}>
+                                <EmojiPicker onEmojiClick={(emojiData) => setNewMessage(prev => prev + emojiData.emoji)} theme="dark" autoFocusSearch={false} />
+                            </div>
+                        )}
+                    </div>
                     <form className="chat-input-area glass-panel" style={{ border: 'none', borderRadius: 0, borderTop: '1px solid var(--border-color)' }} onSubmit={handleSendMessage}>
-                        <button type="button" className="icon-btn"><Smile size={24} /></button>
+                        <button type="button" className="icon-btn" onClick={() => setShowEmojiPicker(prev => !prev)}><Smile size={24} /></button>
                         <button type="button" className="icon-btn"><Paperclip size={24} /></button>
                         <input
                             type="text"

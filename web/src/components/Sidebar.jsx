@@ -131,8 +131,11 @@ export default function Sidebar({ contacts, activeChatUser, onSelectContact, cur
                             onClick={() => onSelectContact(contact)}
                             style={activeChatUser?.id === contact.id ? { borderRadius: '0.5rem', margin: '0.25rem 0.5rem' } : {}}
                         >
-                            <div className="user-avatar">
+                            <div className="user-avatar" style={{ position: 'relative' }}>
                                 {(contact.username || contact.email || 'U')[0].toUpperCase()}
+                                {contact.last_seen && (new Date() - new Date(contact.last_seen)) < 5 * 60 * 1000 && (
+                                    <span style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, background: '#10b981', borderRadius: '50%', border: '2px solid var(--glass-bg)' }}></span>
+                                )}
                             </div>
                             <div className="user-info">
                                 <div className="user-name">{contact.username || contact.email}</div>

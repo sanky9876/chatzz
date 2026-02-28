@@ -8,7 +8,8 @@ data class User(
     val email: String? = null,
     val name: String? = null,
     val avatar_url: String? = null,
-    val created_at: String? = null
+    val created_at: String? = null,
+    val last_seen: String? = null
 )
 
 @Serializable

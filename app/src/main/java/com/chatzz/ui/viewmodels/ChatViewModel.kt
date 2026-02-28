@@ -24,14 +24,29 @@ class ChatViewModel(
 
     private fun loadMessages() {
         viewModelScope.launch {
-            _messages.value = repository.getMessages(chatId)
+            val msgs = repository.getMessages(chatId)
+            _messages.value = msgs
+            if (msgs.any { it.sender_id != currentUserId && it.read_at == null }) {
+                repository.markMessagesAsRead(chatId, currentUserId)
+            }
         }
     }
 
     private fun observeNewMessages() {
         viewModelScope.launch {
             repository.observeMessages(chatId).collect { newMessage ->
-                _messages.value = _messages.value + newMessage
+                val currentList = _messages.value.toMutableList()
+                val existingIndex = currentList.indexOfFirst { it.id == newMessage.id }
+                if (existingIndex >= 0) {
+                    currentList[existingIndex] = newMessage
+                } else {
+                    currentList.add(newMessage)
+                }
+                _messages.value = currentList
+                
+                if (newMessage.sender_id != currentUserId && newMessage.read_at == null) {
+                    repository.markMessagesAsRead(chatId, currentUserId)
+                }
             }
         }
     }
